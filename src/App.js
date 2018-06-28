@@ -473,7 +473,7 @@ class App extends Component {
                           this.state.sr.description,
                           this.state.sr.status,
                         ]);
-                        this.setState(initialState);
+                        this.setState({ sr: { ...initialState.sr } });
                         history.push('/');
                       }}
                     >
@@ -502,7 +502,6 @@ class App extends Component {
                           'Break/Lunch',
                         ]);
                         history.push('/');
-                        this.setState({ break: { startBreak, endBreak } });
                       }}
                       startText="Start Break"
                       endText="End Break"
