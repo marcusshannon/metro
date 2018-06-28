@@ -4,7 +4,6 @@ import {
   Route,
   Redirect,
   Switch,
-  Link,
 } from 'react-router-dom';
 import { cx, css } from 'emotion';
 import { withRouter } from 'react-router';
@@ -46,11 +45,7 @@ const initialState = {
     startTask: null,
     endTask: null,
     description: '',
-    completed: null,
-  },
-  break: {
-    startBreak: null,
-    endBreak: null,
+    status: null,
   },
   name: localStorage.getItem('name') || '',
 };
@@ -147,7 +142,7 @@ class Timer extends Component {
             </Button>
           )}
           {this.state.inProgress && (
-            <Button className="flex-1" className="flex-1" disabled={true}>
+            <Button className="flex-1" disabled={true}>
               {this.props.startText}
             </Button>
           )}
@@ -176,14 +171,20 @@ class Timer extends Component {
 class App extends Component {
   state = initialState;
 
-  onSubmit = body => {
-    fetch('/lambda', {
-      method: 'POST',
-      body: JSON.stringify(body),
-    });
-  };
+  onSubmit = body =>
+    fetch(
+      'https://us-central1-maintenance-208601.cloudfunctions.net/uploadToSheets',
+      {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      },
+    );
 
   render() {
+    console.log(this.state);
     return (
       <div
         className={cx(
@@ -419,14 +420,27 @@ class App extends Component {
                       </h1>
                       <div className="flex flex-col sm:flex-row">
                         <Button
-                          onClick={() => history.push('/sr-8')}
+                          onClick={() => {
+                            this.setState({
+                              sr: { ...this.state.sr, status: 'Complete' },
+                            });
+                            history.push('/sr-8');
+                          }}
                           className="flex-1"
                         >
                           Complete
                         </Button>
                         <div className="w-5 h-5" />
                         <Button
-                          onClick={() => history.push('/sr-8')}
+                          onClick={() => {
+                            this.setState({
+                              sr: {
+                                ...this.state.sr,
+                                status: 'Work in progress',
+                              },
+                            });
+                            history.push('/sr-8');
+                          }}
                           className="flex-1"
                         >
                           WIP
@@ -441,7 +455,31 @@ class App extends Component {
                 exact={true}
                 render={({ history }) => (
                   <React.Fragment key="sr-8">
-                    <Button onClick={() => history.push('/')}>Submit</Button>
+                    <Button
+                      onClick={() => {
+                        this.onSubmit([
+                          moment().format('M/D/Y'),
+                          this.state.name,
+                          '',
+                          this.state.sr.srNumber,
+                          this.state.sr.location,
+                          this.state.sr.startTravel
+                            ? this.state.sr.startTravel.format('HH:mm:ss')
+                            : 'No Travel',
+                          this.state.sr.endTravel
+                            ? this.state.sr.endTravel.format('HH:mm:ss')
+                            : 'No Travel',
+                          this.state.sr.startTask.format('HH:mm:ss'),
+                          this.state.sr.endTask.format('HH:mm:ss'),
+                          this.state.sr.description,
+                          this.state.sr.status,
+                        ]);
+                        this.setState(initialState);
+                        history.push('/');
+                      }}
+                    >
+                      Submit
+                    </Button>
                   </React.Fragment>
                 )}
               />
@@ -452,6 +490,18 @@ class App extends Component {
                   <React.Fragment key="break">
                     <Timer
                       onEndClick={(startBreak, endBreak) => {
+                        this.onSubmit([
+                          moment().format('M/D/Y'),
+                          this.state.name,
+                          '',
+                          'Break/Lunch',
+                          'Break/Lunch',
+                          '',
+                          '',
+                          startBreak.format('HH:mm:ss'),
+                          endBreak.format('HH:mm:ss'),
+                          'Break/Lunch',
+                        ]);
                         history.push('/');
                         this.setState({ break: { startBreak, endBreak } });
                       }}

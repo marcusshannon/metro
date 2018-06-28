@@ -8,8 +8,7 @@
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-router-dom": "^4.3.1",
-    "react-scripts": "1.1.4",
-    "tailwindcss": "^0.6.1"
+    "react-scripts": "1.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -17,5 +16,8 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "tailwind": "npx tailwind build tailwind -c ./tailwind.js -o src/tailwind.css"
+  },
+  "devDependencies": {
+    "tailwindcss": "^0.6.1"
   }
 }
