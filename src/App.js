@@ -48,6 +48,10 @@ const initialState = {
     description: '',
     completed: null,
   },
+  break: {
+    startBreak: null,
+    endBreak: null,
+  },
   name: localStorage.getItem('name') || '',
 };
 
@@ -118,11 +122,9 @@ class Timer extends Component {
   render() {
     return (
       <div className="w-3/4">
-        <h1 className="text-center mb-3">
+        <h1 className="text-center mb-3 text-black">
           {this.state.inProgress
-            ? Timer.format(
-                this.state.now.diff(moment(this.state.startTime), 'seconds'),
-              )
+            ? Timer.format(this.state.now.diff(this.state.startTime, 'seconds'))
             : '00:00:00'}
         </h1>
         <div className="flex flex-col sm:flex-row">
@@ -131,7 +133,7 @@ class Timer extends Component {
               className="flex-1"
               onClick={() => {
                 this.setState({
-                  startTime: Date.now(),
+                  startTime: moment(),
                   inProgress: true,
                   now: moment(),
                 });
@@ -159,7 +161,7 @@ class Timer extends Component {
             <Button
               className="flex-1"
               onClick={() =>
-                this.props.onEndClick(this.state.startTime, Date.now())
+                this.props.onEndClick(this.state.startTime, moment())
               }
             >
               {this.props.endText}
@@ -174,11 +176,12 @@ class Timer extends Component {
 class App extends Component {
   state = initialState;
 
-  componentDidMount() {
-    // if (window.location.href !== window.location.origin) {
-    //   console.log(window.location.replace(window.location.origin));
-    // }
-  }
+  onSubmit = body => {
+    fetch('/lambda', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  };
 
   render() {
     return (
@@ -245,6 +248,19 @@ class App extends Component {
                         Break / Lunch
                       </Button>
                     </div>
+                    <div
+                      onClick={() => history.push('/name')}
+                      className={cx(
+                        css`
+                          position: absolute;
+                          top: 20px;
+                          left: 10px;
+                        `,
+                        'text-orange border-orange border p-3 rounded',
+                      )}
+                    >
+                      Set name
+                    </div>
                   </React.Fragment>
                 )}
               />
@@ -306,7 +322,7 @@ class App extends Component {
                 render={({ history }) => (
                   <React.Fragment key="sr-3">
                     <div className="w-3/4">
-                      <h1 className="text-grey-darkest text-center mb-3">
+                      <h1 className="text-black text-center mb-3">
                         Travelling?
                       </h1>
                       <div className="flex flex-col sm:flex-row">
@@ -359,7 +375,7 @@ class App extends Component {
                         history.push('/sr-6');
                       }}
                       startText="Start Work"
-                      endText="End Working"
+                      endText="End Work"
                     />
                   </React.Fragment>
                 )}
@@ -370,7 +386,7 @@ class App extends Component {
                 render={({ history }) => (
                   <React.Fragment key="sr-6">
                     <div className="w-3/4">
-                      <h1 className="text-grey-darkest mb-3 text-center">
+                      <h1 className="text-black mb-3 text-center">
                         Description of work completed
                       </h1>
                       <textarea
@@ -398,7 +414,7 @@ class App extends Component {
                 render={({ history }) => (
                   <React.Fragment key="sr-7">
                     <div className="w-3/4">
-                      <h1 className="text-grey-darkest mb-3 text-center">
+                      <h1 className="text-black mb-3 text-center">
                         Task Status
                       </h1>
                       <div className="flex flex-col sm:flex-row">
@@ -437,6 +453,7 @@ class App extends Component {
                     <Timer
                       onEndClick={(startBreak, endBreak) => {
                         history.push('/');
+                        this.setState({ break: { startBreak, endBreak } });
                       }}
                       startText="Start Break"
                       endText="End Break"
